@@ -1,5 +1,7 @@
-#include <pthreads.h>
+#include <pthread.h>
 #include <math.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int **roots; //d x 2 array
 int main(int argc, char** argv)
@@ -27,7 +29,7 @@ int main(int argc, char** argv)
   //finish the threads
   //write to file
   for (int i = 0; i<d; i++)
-    free(roots[d]);
+    free(roots[i]);
   free(roots);
   free(threads);
   return 0;
