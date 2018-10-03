@@ -7,6 +7,9 @@
 #define UPPER_THRESHOLD 10000000000
 #define LOWER_THRESHOLD 0.001
 
+//10 distinct colors in RGB
+const char * const colors[10] = {"230 25 75 ","245 130 48 ","255 225 25 ","210 245 60 ","60 180 75 ","70 240 240 ","0 130 200 ","145 30 180 ","240 50 230 ","128 128 128 "};
+
 unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
 signed char **attractors;
@@ -117,12 +120,12 @@ int main(int argc, char** argv)
   FILE *fa = fopen(name_attr, "w");
   FILE *fc = fopen(name_conv, "w");
 
-  fprintf(fa, "P3\n%d %d\n%d\n", nrc, nrc, d);
-  fprintf(fc, "P3\n%d %d\n%d\n", nrc, nrc, d);
+  fprintf(fa, "P3\n%d %d\n%d\n", nrc, nrc, 255);
+  fprintf(fc, "P3\n%d %d\n%d\n", nrc, nrc, 255);
   //TODO Here apparently a maximum number of iterations should be known. I dont know how we can obtain it though.
   for (int i = 0; i< nrc; i++) {
     for (int j = 0; j < nrc; j++)
-      fprintf(fa, "%d ", attractors[i][j]);
+      fprintf(fa, colors[attractors[i][j]]);
     fprintf(fa, "\n");
     for (int j = 0; j < nrc; j++)
       fprintf(fc, "%d ", iterations[i][j]);
