@@ -8,8 +8,8 @@
 #define LOWER_THRESHOLD 0.001
 
 //10 distinct colors in RGB
-const char * const colors[10] = {"230 25 75 ","245 130 48 ","255 225 25 ","210 245 60 ","60 180 75 ","70 240 240 ","0 130 200 ","145 30 180 ","240 50 230 ","128 128 128 "};
-
+const char * const colors[] =
+  {"230 25 75 ","245 130 48 ","255 225 25 ","210 245 60 ","60 180 75 ","70 240 240 ","0 130 200 ","145 30 180 ","240 50 230 ","128 128 128 "};
 unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
 signed char **attractors;
@@ -36,8 +36,6 @@ inline signed char check_solution(double complex solution)
     return -1;
 }
 
-inline signed char compute_point(double complex x) {}
-
 inline void compute_line(int line) {
     complex double point;
     int iteration_count;
@@ -49,12 +47,12 @@ inline void compute_line(int line) {
         attractor = check_solution(point);
         while (-1 == attractor)
         {
-        point = newton_step(point);
-        attractor = check_solution(point);
-        iteration_count++;
+	    point = newton_step(point);
+	    attractor = check_solution(point);
+	    ++iteration_count;
         }
         attractors[line][i] = attractor;
-        iterations[line][i] = iteration_count;
+        iterations[line][i] = iteration_count > 20 ? 20 : iteration_count;
     }
 }
 
@@ -79,9 +77,10 @@ int main(int argc, char** argv) {
     nthreads = atoi(argv[1]+2); //number of threads
     nrc = atoi(argv[2]+2); //number of rows and columns
 
+    d = atoi(argv[3]); //f(x) = x^d-1
     if (d>=10)
         exit(1);
-    d = atoi(argv[3]); //f(x) = x^d-1
+    
 
     roots = malloc((d+1) * sizeof(*roots));
 
@@ -143,13 +142,20 @@ int main(int argc, char** argv) {
             fprintf(fa, colors[attractors[i][j]]);
         fprintf(fa, "\n");
         for (int j = 0; j < nrc; ++j)
-            fprintf(fc, "%d ", iterations[i][j]);
+	  //fprintf(fc, colors[iterations[i][j]]);
         fprintf(fc, "\n");
     }
+    fclose(fa);
+    fclose(fc);
 
     free(roots);
     free(threads);
     free(thread_args);
+    for (int i = 0; i < nrc; ++i)
+    {
+        free(attractors[i]);
+        free(iterations[i]);
+    }
     free(attractors);
     free(iterations);
 

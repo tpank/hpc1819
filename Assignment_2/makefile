@@ -1,8 +1,8 @@
 OBJS = 
 TARGETS = newton
 CC = gcc
-CFLAGS = -O3 -pthread
-CFLAGS2 = -O2 -pthread
+CFLAGS = -O3 -pthread -march=native
+CFLAGS2 = -O2 -pthread -march=native
 LIBS = -lm
 
 .PHONY : clean all
