@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <complex.h>
+#include <string.h>
+#include <time.h>
 
 #define UPPER_THRESHOLD 10000000000
 #define LOWER_THRESHOLD 0.001
@@ -14,10 +16,11 @@ unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
 signed char **attractors;
 unsigned int **iterations;
+char *finished;
+pthread_mutex_t finished_mutex;
 
-inline double complex newton_step(double complex x_last)
-{
-     double complex ddx = cpow(x_last, d-1); //x^(n-1)
+inline double complex newton_step(double complex x_last) {
+    double complex ddx = cpow(x_last, d-1); //x^(n-1)
     // cpow(a,b) is implemented as exp(log(a)*b), maybe it will be faster to implement our own pow function
     return x_last - (x_last*ddx -1) / (d * ddx);
 }
@@ -40,6 +43,10 @@ inline void compute_line(int line) {
     complex double point;
     int iteration_count;
     signed char attractor;
+    
+    signed char *attractors_line = malloc(nrc*sizeof(**attractors)); //freed in main
+    unsigned int *iterations_line = malloc(nrc*sizeof(**iterations));
+
     for (int i = 0; i < nrc; i++)
     {
         point = -2 + 4.0*line/nrc  + I * (2 - 4.0*i/nrc);
@@ -47,13 +54,16 @@ inline void compute_line(int line) {
         attractor = check_solution(point);
         while (-1 == attractor)
         {
-	    point = newton_step(point);
-	    attractor = check_solution(point);
-	    ++iteration_count;
+	        point = newton_step(point);
+	        attractor = check_solution(point);
+	        ++iteration_count;
         }
-        attractors[line][i] = attractor;
-        iterations[line][i] = iteration_count > 20 ? 20 : iteration_count;
+        attractors_line[i] = attractor;
+        iterations_line[i] = iteration_count > 20 ? 20 : iteration_count;
     }
+    attractors[line] = attractors_line;
+    iterations[line] = iterations_line;
+    finished[line] = 1;
 }
 
 void *thread_function(void *args) {
@@ -62,7 +72,6 @@ void *thread_function(void *args) {
     while (linen < nrc)
     {
         compute_line(linen);
-        // TODO here somehow the file writing thread should be informed that there is a line ready to be printed
         linen += nthreads;
     }
   return NULL;
@@ -91,17 +100,12 @@ int main(int argc, char** argv) {
     roots[d] = 0; //workaround to break if the newton algorithm is to close to the origin
     attractors = malloc(nrc*sizeof(*attractors));
     iterations = malloc(nrc*sizeof(*iterations));
-
-    for (int i = 0; i < nrc; i++)
-    {
-        attractors[i] = malloc(nrc*sizeof(**attractors));
-        iterations[i] = malloc(nrc*sizeof(**iterations));
-    }
+    finished = calloc(nrc, sizeof(*finished));
 
     pthread_t *threads;
     threads = malloc(nthreads * sizeof(*threads));
     int *thread_args = malloc(nthreads * sizeof(*thread_args));
-
+    pthread_mutex_init(&finished_mutex, NULL);
     for (int tx = 0; tx<nthreads; tx++)
     {
         //start the threads
@@ -114,15 +118,7 @@ int main(int argc, char** argv) {
         }
     }
 
-    //finish the threads
-    for (int tx=0; tx < nthreads; ++tx) {
-        int ret;
-        if (ret = pthread_join(threads[tx], NULL))
-        {
-            printf("Error joining thread: %d\n", ret);
-            exit(1);
-        }
-    }
+    
   
     //write to file
     char name_attr[] = "newton_attractors_xd.ppm";
@@ -135,29 +131,59 @@ int main(int argc, char** argv) {
     fprintf(fa, "P3\n%d %d\n%d\n", nrc, nrc, 255);
     fprintf(fc, "P3\n%d %d\n%d\n", nrc, nrc, 255);
 
-    //TODO Here apparently a maximum number of iterations should be known. I dont know how we can obtain it though.
-    for (int i = 0; i< nrc; ++i)
+    char *finished_loc = malloc(nrc*sizeof(*finished_loc));
+    struct timespec sleep_timespec;
+    sleep_timespec.tv_sec = 0;
+    sleep_timespec.tv_nsec = 50000;
+
+    for (int ix = 0; ix < nrc;)
     {
-        for (int j = 0; j < nrc; ++j)
-            fprintf(fa, colors[attractors[i][j]]);
-        fprintf(fa, "\n");
-        for (int j = 0; j < nrc; ++j)
-	    fprintf(fc, colors[iterations[i][j]]);
-        fprintf(fc, "\n");
+        pthread_mutex_lock(&finished_mutex);
+        if ( finished[ix] != 0 )
+            memcpy(finished_loc, finished, nrc*sizeof(*finished));
+        pthread_mutex_unlock(&finished_mutex);
+
+
+        if ( finished_loc[ix] == 0 )
+        {
+            nanosleep(&sleep_timespec, NULL);
+            continue;
+        }
+        signed char *attractors_loc;
+        unsigned int *iterations_loc;
+        for ( ; ix < nrc && finished[ix] != 0; ++ix ) {
+            attractors_loc = attractors[ix];
+            iterations_loc = iterations[ix];
+            for (int jx = 0; jx < nrc; ++jx)
+                fprintf(fa, colors[attractors_loc[jx]]);
+            fprintf(fa, "\n");
+            for (int jx = 0; jx < nrc; ++jx)
+	            fprintf(fc, colors[iterations_loc[jx]]);
+            fprintf(fc, "\n");    
+            free(attractors_loc); //allocated in thread_function
+            free(iterations_loc);
+        }
     }
+    free(finished_loc);
+    
     fclose(fa);
     fclose(fc);
-
+    //finish the threads
+    for (int tx=0; tx < nthreads; ++tx) {
+        int ret;
+        if (ret = pthread_join(threads[tx], NULL))
+        {
+            printf("Error joining thread: %d\n", ret);
+            exit(1);
+        }
+    }
+    pthread_mutex_destroy(&finished_mutex);
     free(roots);
     free(threads);
     free(thread_args);
-    for (int i = 0; i < nrc; ++i)
-    {
-        free(attractors[i]);
-        free(iterations[i]);
-    }
     free(attractors);
     free(iterations);
+    free(finished);
 
     return 0;
 }
