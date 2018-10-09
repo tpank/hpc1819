@@ -8,10 +8,18 @@
 
 #define UPPER_THRESHOLD 10000000000
 #define LOWER_THRESHOLD 0.001
-
+#define COLOR_LENGTH 12
 //10 distinct colors in RGB
+const char * const greyscale[] = {
+				  "000 000 000 ", "012 012 012 ", "024 024 024 ", "036 036 036 ", "048 048 048 ",
+				  "060 060 060 ", "072 072 072 ", "084 084 084 ", "096 096 096 ", "108 108 108 ",
+				  "120 120 120 ", "132 132 132 ", "144 144 144 ", "156 156 156 ", "168 168 168 ",
+				  "180 180 180 ", "192 192 192 ", "204 204 204 ", "216 216 216 ", "228 228 228 ",
+				  "240 240 240 "
+};
 const char * const colors[] =
-  {"230 25 75 ", "60 180 75 ", "255 225 25 ", "0 130 200 ", "245 130 48 ", "145 30 180 ", "70 240 240 ", "240 50 230 ", "210 245 60 ", "250 190 190 ", "0 128 128 ", "230 190 255 ", "170 110 40 ", "255 250 200 ", "128 0 0 ", "170 255 195 ", "128 128 0 ", "255 215 180 ", "0 0 128 ", "128 128 128 ", "255 255 255 ", "0 0 0 "}; //RGB triplets of 20 different colors, encoded as strings
+  {"230 025 075 ", "060 180 075 ", "255 225 025 ", "000 130 200 ", "245 130 048 ", "145 030 180 ", "070 240 240 ", "240 050 230 ", "210 245 060 ", "250 190 190 ", "000 128 128 ", "230 190 255 ", "170 110 040 ", "255 250 200 ", "128 000 000 ", "170 255 195 ", "128 128 000 ", "255 215 180 ", "000 000 128 ", "128 128 128 ", "255 255 255 ", "000 000 000 "}; //RGB triplets of 20 different colors, encoded as strings
+
 unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
 signed char **attractors;
@@ -143,7 +151,7 @@ int main(int argc, char** argv) {
         printf("d must be smaller than 10 and all parameters must be greater than 0\n");
 	printf("%s", usage);
         exit(1);
-    } 
+    }
 
     roots = malloc((d+1) * sizeof(*roots));
 
@@ -209,11 +217,11 @@ int main(int argc, char** argv) {
             attractors_loc = attractors[ix];
             iterations_loc = iterations[ix];
             for (int jx = 0; jx < nrc; ++jx)
-                fprintf(fa, colors[attractors_loc[jx]]);
-            fprintf(fa, "\n");
+	        fwrite(colors[attractors_loc[jx]], 1, COLOR_LENGTH, fa); //sizeof(char) is 1 by definition
+            fwrite("\n", 1, 2, fa);
             for (int jx = 0; jx < nrc; ++jx)
-                fprintf(fc, colors[iterations_loc[jx]]);
-            fprintf(fc, "\n");    
+                fwrite(greyscale[iterations_loc[jx]], 1, COLOR_LENGTH, fc);
+            fwrite("\n", 1, 2, fc);    
             free(attractors_loc); //allocated in thread_function
             free(iterations_loc);
         }
