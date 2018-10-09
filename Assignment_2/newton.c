@@ -11,7 +11,7 @@
 
 //10 distinct colors in RGB
 const char * const colors[] =
-  {"230 25 75 ", "60 180 75 ", "255 225 25 ", "0 130 200 ", "245 130 48 ", "145 30 180 ", "70 240 240 ", "240 50 230 ", "210 245 60 ", "250 190 190 ", "0 128 128 ", "230 190 255 ", "170 110 40 ", "255 250 200 ", "128 0 0 ", "170 255 195 ", "128 128 0 ", "255 215 180 ", "0 0 128 ", "128 128 128 ", "255 255 255 ", "0 0 0 "};
+  {"230 25 75 ", "60 180 75 ", "255 225 25 ", "0 130 200 ", "245 130 48 ", "145 30 180 ", "70 240 240 ", "240 50 230 ", "210 245 60 ", "250 190 190 ", "0 128 128 ", "230 190 255 ", "170 110 40 ", "255 250 200 ", "128 0 0 ", "170 255 195 ", "128 128 0 ", "255 215 180 ", "0 0 128 ", "128 128 128 ", "255 255 255 ", "0 0 0 "}; //RGB triplets of 20 different colors, encoded as strings
 unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
 signed char **attractors;
@@ -78,22 +78,41 @@ void *thread_function(void *args) {
 }
 
 int main(int argc, char** argv) {
-  
-    //get the arguments
+    const char * const usage = "Usage: newton -t<number of threads> -l<number of lines> <power d of x in f(x)=x^d-1>\n";
     if (argc < 4)
+    {
+        printf("%s", usage);
         exit(1);
+    }
   
-    nthreads = atoi(argv[1]+2); //number of threads
-    nrc = atoi(argv[2]+2); //number of rows and columns
-
-    d = atoi(argv[3]); //f(x) = x^d-1
-    if (d>=10)
+    if (!strncmp(argv[1], "-t", 2) && !strncmp(argv[2], "-l", 2))
+    {
+        nthreads = atoi(argv[1]+2); //number of threads
+        nrc = atoi(argv[2]+2); //number of rows and columns
+        d = atoi(argv[3]); //f(x) = x^d-1
+    }
+    else if (!strncmp(argv[1], "-l", 2) && !strncmp(argv[2], "-t", 2))
+    {
+        nthreads = atoi(argv[2]+2); //number of threads
+        nrc = atoi(argv[1]+2); //number of rows and columns
+        d = atoi(argv[3]); //f(x) = x^d-1
+    }
+    else
+    {
+        printf("%s", usage);
         exit(1);
-    
+    }
+
+    if (d > 9 || d == 0 || nthreads == 0 || nrc == 0)
+    {
+        printf("d must be smaller than 10 and all parameters must be greater than 0\n");
+	printf("%s", usage);
+        exit(1);
+    } 
 
     roots = malloc((d+1) * sizeof(*roots));
 
-    // compute the actual results for the roots
+    // compute the actual roots
     for (int i = 0; i < d; i++)
         roots[i] = cos(2* M_PI * i / d) + I * sin(2* M_PI * i / d);
 
@@ -123,12 +142,12 @@ int main(int argc, char** argv) {
     //write to file
     char name_attr[] = "newton_attractors_xd.ppm";
     char name_conv[] = "newton_convergence_xd.ppm";
-    name_attr[19] = d+'0';
+    name_attr[19] = d+'0'; //ASCII representation of character d if 0<=d<=9
     name_conv[20] = d+'0';
     FILE *fa = fopen(name_attr, "w");
     FILE *fc = fopen(name_conv, "w");
 
-    fprintf(fa, "P3\n%d %d\n%d\n", nrc, nrc, 255);
+    fprintf(fa, "P3\n%d %d\n%d\n", nrc, nrc, 255); //print headers
     fprintf(fc, "P3\n%d %d\n%d\n", nrc, nrc, 255);
 
     char *finished_loc = malloc(nrc*sizeof(*finished_loc));
@@ -158,7 +177,7 @@ int main(int argc, char** argv) {
                 fprintf(fa, colors[attractors_loc[jx]]);
             fprintf(fa, "\n");
             for (int jx = 0; jx < nrc; ++jx)
-	            fprintf(fc, colors[iterations_loc[jx]]);
+                fprintf(fc, colors[iterations_loc[jx]]);
             fprintf(fc, "\n");    
             free(attractors_loc); //allocated in thread_function
             free(iterations_loc);
