@@ -20,9 +20,39 @@ char *finished;
 pthread_mutex_t finished_mutex;
 
 inline double complex newton_step(double complex x_last) {
-    double complex ddx = cpow(x_last, d-1); //x^(n-1)
-    // cpow(a,b) is implemented as exp(log(a)*b), maybe it will be faster to implement our own pow function
-    return x_last - (x_last*ddx -1) / (d * ddx);
+  complex double intermediate;
+  //x_(n+1) = x_n - f(x_n)/f'(x_n)
+  //= x_n - (x^d-1)/d*x^(n-1)
+  //= 1/(d*x_n^(d-1)) + (d-1)/d * x_n
+    switch (d) {
+    case 1:
+      return 1;
+    case 2:
+      return 1/(2*x_last) + x_last/2;
+    case 3:
+      return 1/(3*x_last*x_last)+2*x_last/3;
+    case 4:
+      return 1/(4*x_last*x_last*x_last)+3*x_last/4;
+    case 5:
+      intermediate = x_last * x_last;
+      return 1/(5*intermediate*intermediate)+4*x_last/5;
+    case 6:
+      intermediate = x_last * x_last;
+      return 1/(6*intermediate*intermediate*x_last)+5*x_last/6;
+    case 7:
+      intermediate = x_last * x_last *x_last;
+      return 1/(7*intermediate*intermediate)+6*x_last/7;
+    case 8:
+      intermediate = x_last * x_last;
+      return 1/(8*intermediate*intermediate*x_last)+7*x_last/8;
+    case 9:
+      intermediate = x_last * x_last;
+      intermediate = intermediate * intermediate;
+      return 1/(9*intermediate * intermediate)+8*x_last/9;
+    default:
+      printf("Unexpected power: d = %u\n", d);
+      exit(1);
+    }
 }
 
 //checks whether a solution matches one of the precalculated roots;
