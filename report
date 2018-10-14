@@ -22,7 +22,7 @@ We initialize pointer thread_args just to be able to pass thread_id to thread_fu
 Here a local item_done pointer is initialized: finished_loc and using pthread_mutex_lock and unlock the access of other threads to “finished” pointer is prevented. For every it is checked that whether the row is done or not, if it is done the finished pointer copied to finished_loc and if it is not done yet nanosleep function will suspend the checking for 50 microseconds. After all rows being done we can copy attractors and iterations of that line to two local pointers. It is done because accessing to global variables is expensive in terms of performance. Those local pointers are used to write ppm files. At the end all threads are terminated using pthrea_join function and the pthread_mutex finished_mutex which was used to regulate access to pointer to char “finished” is destroyed using pthread_mutex_destroy. Also the allocated memories are freed.
 
 
-Question which should be addressed in the report:
+Question which should be addressed in the report:(after making sure that the answers are correct we will put the answers in right positions in the report)
 
 1) Given the assumption that the degree and hence number of attractors is small, what is the smallest data type that can encode the attractor index associated with a pixel? Call this type TYPE_ATTR.
 It is signe char.
