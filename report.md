@@ -1,4 +1,4 @@
-# Assignment 2 report
+# Assignment 2 Report
 
 The code starts with including header files for different functions and features that it uses: 
 pthread.h for using mutex and pthreads, complex.h to work with complex types, string.h to use memcpy and time.h to use nanosleep function.
@@ -7,6 +7,8 @@ The global variables and pointers are initialized to be accessible by different 
 
 
 The defined functions are as below:
+
+abs_val: This is a simple function to calculate the absolute value of a double number. Multiplies the input number with the subtraction of 1 or 0 if the number is positive, minus the 1 or 0 if the number is negative.
 
 newton_step:  This function allows to use more time efficient formula for finding new x_i through the iterations for 
 different d (the degree of the polynomial) since d is between 1 and 9. The newton_step function has pre-calculated 
