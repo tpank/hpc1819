@@ -8,7 +8,10 @@ The global variables and pointers are initialized to be accessible by different 
 
 The defined functions are as below:
 
-newton_step:  This function allows to use more time efficient formula for finding new x_i through the iterations for different d (the degree of the polynomial) since d is between 1 and 9.
+newton_step:  This function allows to use more time efficient formula for finding new x_i through the iterations for 
+different d (the degree of the polynomial) since d is between 1 and 9. The newton_step function has pre-calculated 
+derivative formulas to increase the speed of the calculation. Therefore, it is split in different cases, for different 
+polynomial degrees.
 
 check_solution: since we can abort the iteration if  the new x_i is closer that 10^-3 to one of the roots of the polynomial or the origin, also if  the real or imaginary part of the new x_i is bigger than 10^10 this function is defined to abort iteration in such cases.
 
