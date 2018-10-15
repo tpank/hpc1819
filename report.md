@@ -5,18 +5,18 @@
 The code starts with including header files for different functions and features that it uses: 
 pthread.h for using mutex and pthreads, complex.h to work with complex types, string.h to use memcpy and time.h to use nanosleep function.
 
-The global variables and pointers are initialized to be accessible by different functions and finished_mutex is a mutex that is initialized to regulate access to pointer to char **finished**.
+The global variables and pointers are initialized to be accessible by different functions and **finished_mutex** is a mutex that is initialized to regulate access to pointer to char **finished**.
 
 
 The defined functions are as below:
 
-newton_step:  This function allows to use more time efficient formula for finding new x_i through the iterations for different d (the degree of the polynomial) since d is between 1 and 9.
+*newton_step*:  This function allows to use more time efficient formula for finding new x_i through the iterations for different d (the degree of the polynomial) since d is between 1 and 9.
 
-check_solution: since we can abort the iteration if  the new x_i is closer that 10^-3 to one of the roots of the polynomial or the origin, also if  the real or imaginary part of the new x_i is bigger than 10^10 this function is defined to abort iteration in such cases.
+*check_solution*: since we can abort the iteration if  the new x_i is closer that 10^-3 to one of the roots of the polynomial or the origin, also if  the real or imaginary part of the new x_i is bigger than 10^10 this function is defined to abort iteration in such cases.
 
-compute_line: this function receives a row (the real part is constant and the imaginary part from -2 to 2) it checks for every point in that line whether it is close enough to one of the roots and as long at it is not it goes through the newton_step function to find the new x_i and checks again until one the required conditions to abort the iterations is met. For every point the number of iterations and the root which the point converges to is saved in the two global variables, also the item of that line in **finished** pointer changes from 0 to 1. In fact it is equivalent to item_done pointer that we had in the lecture.
+*compute_line*: this function receives a row (the real part is constant and the imaginary part from -2 to 2) it checks for every point in that line whether it is close enough to one of the roots and as long at it is not it goes through the newton_step function to find the new x_i and checks again until one the required conditions to abort the iterations is met. For every point the number of iterations and the root which the point converges to is saved in the two global variables, also the item of that line in **finished** pointer changes from 0 to 1. In fact it is equivalent to item_done pointer that we had in the lecture.
 
-thread_function: this pointer to function receives void pointer which then it is caster to pointer to integer that is thread_id and this thread_id shows the thread offset which can be from 0 to number of threads-1.  The rows is set from 0 to number of rows -1. Number of rows is taken as one of the arguments from the command line.  For every row compute_line function is called.
+*thread_function*: this pointer to function receives void pointer which then it is caster to pointer to integer that is thread_id and this thread_id shows the thread offset which can be from 0 to number of threads-1.  The rows is set from 0 to number of rows -1. Number of rows is taken as one of the arguments from the command line.  For every row compute_line function is called.
 
 ## Program layout:
 First it receives the number of threads, the number of rows and the degree of the polynomial from the command line. The exact values of the roots of the polynomial is computed and saved in the pointer **roots**. Also zero is considered as an additional zero.
