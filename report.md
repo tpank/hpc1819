@@ -18,12 +18,12 @@ The defined functions are as below:
 
 *thread_function*: this pointer to function receives void pointer which then it is caster to pointer to integer that is thread_id and this thread_id shows the thread offset which can be from 0 to number of threads-1.  The rows is set from 0 to number of rows -1. Number of rows is taken as one of the arguments from the command line.  For every row *compute_line* function is called.
 
-## Program layout:
+## Program layout
 First it receives the number of threads, the number of rows and the degree of the polynomial from the command line. The exact values of the roots of the polynomial is computed and saved in the pointer **roots**. Also zero is considered as an additional zero.
 We initialize pointer thread_args just to be able to pass thread_id to *thread_function* using *pthread_create*. The function thread_function is responsible to do the calculations for every row by a thread. After finding the number of iterations and the root that every point converges to for all points in all rows and saving them in the global pointer to pointer to unsigned int **iterations** and pointer to pointer to signed char **attractors**	and changing the items in the **finished** pointer to 1 now it is time to write them to file.
 Here a local item_done pointer is initialized: finished_loc and using pthread_mutex_lock and unlock the access of other threads to **finished** pointer is prevented. For every row it is checked that whether the row is done or not, if it is done the finished pointer copied to finished_loc and if it is not done yet *nanosleep* function will suspend the checking for 50 microseconds. After all rows being done we can copy attractors and iterations of that line to two local pointers. It is done because accessing to global variables is expensive in terms of performance. Those local pointers are used to write ppm files. At the end all threads are terminated using *pthrea_join* function and the pthread_mutex finished_mutex which was used to regulate access to pointer to char **finished** is destroyed using *pthread_mutex_destroy*. Also the allocated memories are freed.
 
-## Performance:
+## Performance
 In order to increase the performance vectorization is implemented using these two lines of code and optimization level 3 to calculate the difference for the real and imaginary part at the same time
 
 `real = creal(solution) - creal(roots[i]);`
