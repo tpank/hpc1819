@@ -30,7 +30,7 @@ In order to increase the performance vectorization is implemented using these tw
 <br />
 `imag = cimag(solution) - cimag(roots[i]);`
 
-In order to avoid taking the square root to calculate the absolute value of a complex number creal and cimag functins are used to find the real and imaginary part of the complex number and then by the code line below we find the square of the absolute value and compare it with the 10^-6. Also we have avoided using power function and multiplication is used.
+In order to avoid taking the square root to calculate the absolute value of a complex number creal and cimag functins are used to find the real and imaginary part of the complex number and then by the code line below we find the square of the absolute value and compare it with square of 10^-3, 10^-6. Also we have avoided using power function and multiplication is used.
 `real*real+imag*imag < LOWER_THRESHOLD * LOWER_THRESHOLD`
 
 In addition taking a local copy of the item_done array which in this code is called **finished** is helpful to the performance because access to the global variables is expensive in terms of performance. 
