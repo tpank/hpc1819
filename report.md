@@ -25,6 +25,7 @@ Here a local item_done pointer is initialized: finished_loc and using pthread_mu
 
 ## Performance:
 In order to increase the performance vectorization is implemented using these two lines of code and optimization level 3 to calculate the difference for the real and imaginary part at the same time
+
 real = creal(solution) - creal(roots[i]);
 imag = cimag(solution) - cimag(roots[i]);
 
