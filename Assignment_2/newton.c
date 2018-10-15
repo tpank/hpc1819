@@ -27,6 +27,10 @@ unsigned int **iterations;
 char *finished;
 pthread_mutex_t finished_mutex;
 
+double abs_val(double c) {
+    return c * ((c > 0) - (c < 0));
+}
+
 inline double complex newton_step(double complex x_last) {
     complex double intermediate;
     //x_(n+1) = x_n - f(x_n)/f'(x_n)
@@ -77,7 +81,7 @@ inline signed char check_solution(double complex solution)
         if (real*real+imag*imag < LOWER_THRESHOLD * LOWER_THRESHOLD)
 	    return i;
     }
-    if (abs(creal(solution))>UPPER_THRESHOLD || abs(cimag(solution))>UPPER_THRESHOLD)
+    if (abs_val(creal(solution))>UPPER_THRESHOLD || abs_val(cimag(solution))>UPPER_THRESHOLD)
         return d;
     return -1;
 }
