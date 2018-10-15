@@ -1,6 +1,7 @@
 
 # Assignment report on Threads (hpcgp011)
 
+## Blocks of code
 The code starts with including header files for different functions and features that it uses: 
 pthread.h for using mutex and pthreads, complex.h to work with complex types, string.h to use memcpy and time.h to use nanosleep function.
 
