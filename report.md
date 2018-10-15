@@ -10,9 +10,9 @@ The global variables and pointers are initialized to be accessible by different 
 
 The defined functions are as below:
 
-*newton_step*:  This function allows to use more time efficient formula for finding new x_i through the iterations for different d (the degree of the polynomial) since d is between 1 and 9.
+*newton_step*:  This function allows to use more time efficient formula for finding new *x_i* through the iterations for different **d** (the degree of the polynomial) since d is between 1 and 9.
 
-*check_solution*: since we can abort the iteration if  the new x_i is closer that 10^-3 to one of the roots of the polynomial or the origin, also if  the real or imaginary part of the new x_i is bigger than 10^10 this function is defined to abort iteration in such cases.
+*check_solution*: since we can abort the iteration if  the new *x_i* is closer that 10^-3 to one of the roots of the polynomial or the origin, also if  the real or imaginary part of the new *x_i* is bigger than 10^10 this function is defined to abort iteration in such cases.
 
 *compute_line*: this function receives a row (the real part is constant and the imaginary part from -2 to 2) it checks for every point in that line whether it is close enough to one of the roots and as long at it is not it goes through the newton_step function to find the new x_i and checks again until one the required conditions to abort the iterations is met. For every point the number of iterations and the root which the point converges to is saved in the two global variables, also the item of that line in **finished** pointer changes from 0 to 1. In fact it is equivalent to item_done pointer that we had in the lecture.
 
