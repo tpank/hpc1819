@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
-int *distances;
+unsigned int *distances;
 
 typedef struct coordinates {
   int x, y, z; //these are the coordinates * 1000
@@ -19,10 +19,11 @@ coordinates_t *input;
 int compute_distance(coordinates_t *a, coordinates_t *b)
 {
   int dx, dy, dz;
-  dx = a->x-b->x;
-  dy = a->y-b->y;
-  dz = a->z-b->z;
-  return round(sqrt(dx*dx + dy*dy + dz*dz)/10);
+  dx = a->x - b->x;
+  dy = a->y - b->y;
+  dz = a->z - b->z;
+  int result = round(sqrt(dx*dx + dy*dy + dz*dz)/10);
+  return result;
 }
 
 int read_coordinates(char *str)
@@ -30,10 +31,10 @@ int read_coordinates(char *str)
   //str has format +03.123
   int v =
      10000 * str[1]
-    + 1000 * str[2];
-    +  100 * str[4];
-    +   10 * str[5];
-    +    1 * str[6];
+    + 1000 * str[2]
+    +  100 * str[4]
+    +   10 * str[5]
+    +    1 * str[6]
     -11111 * '0';
   return str[0] == '+' ? v : -v;
 }
@@ -52,12 +53,16 @@ int main(int argc, char *argv[])
     exit(1);
   }
   struct stat st;
-  fstat(fp, &st); //gets some statistics for the file fp. st.size is the filesize in byte
+  if(fstat(fileno(fp), &st)) { //gets some statistics for the file fp. st.size is the filesize in byte
+    printf("Call of fstat went wrong\n");
+    exit(1);
+  }
   size_t ncoordinates = st.st_size / 24; //24 characters/line
+
   input = malloc(ncoordinates * sizeof(*input));
-  char *buffer = malloc(24);
+  char *buffer = malloc(30);
   for (size_t i = 0; i < ncoordinates; i++) {
-    if (NULL == fgets(buffer, 24, fp))
+    if (NULL == fgets(buffer, 30, fp))
       exit(1);
     int x, y, z;
     x = read_coordinates(buffer);
@@ -71,12 +76,15 @@ int main(int argc, char *argv[])
   }
   free(buffer);
   fclose(fp);
-
   //TODO Here the computing and openMP should come into play
   distances = calloc(NDISTANCES, sizeof(*distances));
   for (size_t i = 0; i < ncoordinates; i++)
     for (size_t j = i+1; j < ncoordinates; j++)
       distances[compute_distance(input+i, input+j)]++;
+  for (size_t i = 0; i < NDISTANCES; i++)
+    if (distances[i])
+      printf("%d: %d\n", i, distances[i]);
   free(input);
+  free(distances);
   return 0;
 }
