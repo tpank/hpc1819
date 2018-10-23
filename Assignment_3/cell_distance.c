@@ -1,67 +1,14 @@
 #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <math.h>
+#include <string.h>
 
-//data structure: We need a data structure to store the distances and the number of their occurences
-//I would suggest a binary tree for that.
-typedef struct node {
-  int distance, counter;
-  node_t *left, *right;
-} node_t;
-typedef struct tree {
-  node_t *root;
-  int nnodes;
-} tree_t;
-int insert_subtree(node_t *root, int distance) {
-  if (root->distance == distance) {
-    root->counter++;
-    return 0;
-  }
-  if (root->distance < distance) {
-    if (NULL == root->right) {
-      root->right = calloc(sizeof(node_t));
-      (root->right)->distance = distance;
-      (root->right)->counter = 1;
-      return 1;
-    }
-    return insert(root->right, distance);
-  }
-  if (NULL == root->left) {
-    root->left = calloc(sizeof(node_t));
-    (root->left)->distance = distance;
-    (root->left)->counter = 1;
-    return 1;
-  }
-  return insert(root->left, distance);
-}
-
-void tree_free(tree_t *tree)
-{
-  node_free(tree->root);
-  free(tree);
-  return;
-}
-
-void node_free(node_t *node)
-{
-  if (node == NULL)
-    return;
-  node_free(node->left);
-  node_free(node->right);
-  free(node);
-  return;
-}
-
-void insert_start(tree_t *tree, int distance)
-{
-  tree->nnodes += insert_subtree(tree->root, distance);
-}
-int **distance_array(tree_t *tree)
-{
-  //TODO this function should return a 2xN array with the distances and their number of occurences.
-}
+#define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
+int *distances;
 
 typedef struct coordinates {
   int x, y, z; //these are the coordinates * 1000
@@ -69,16 +16,16 @@ typedef struct coordinates {
 
 coordinates_t *input;
 
-int distance_squared(coordinates_t *a, coordinates_t *b)
+int compute_distance(coordinates_t *a, coordinates_t *b)
 {
   int dx, dy, dz;
   dx = a->x-b->x;
   dy = a->y-b->y;
   dz = a->z-b->z;
-  return (dx*dx + dy*dy + dz*dz);
+  return round(sqrt(dx*dx + dy*dy + dz*dz)/10);
 }
 
-int read_distance(char *str)
+int read_coordinates(char *str)
 {
   //str has format +03.123
   int v =
@@ -97,7 +44,7 @@ int main(int argc, char *argv[])
     printf("Usage: %s -t<number of OpenMP threads>\n", argv[0]);
     exit(1);
   }
-  int nthreads = strtoi(argv[1]+2);
+  int nthreads = strtol(argv[1]+2, NULL, 0);
 
   FILE *fp = fopen("cells", "r");
   if (fp == NULL) {
@@ -113,9 +60,9 @@ int main(int argc, char *argv[])
     if (NULL == fgets(buffer, 24, fp))
       exit(1);
     int x, y, z;
-    x = read_distance(buffer);
-    y = read_distance(buffer+8);
-    z = read_distance(buffer+16);
+    x = read_coordinates(buffer);
+    y = read_coordinates(buffer+8);
+    z = read_coordinates(buffer+16);
     
     input[i].x = x;
     input[i].y = y;
@@ -126,7 +73,10 @@ int main(int argc, char *argv[])
   fclose(fp);
 
   //TODO Here the computing and openMP should come into play
-  
+  distances = calloc(NDISTANCES, sizeof(*distances));
+  for (size_t i = 0; i < ncoordinates; i++)
+    for (size_t j = i+1; j < ncoordinates; j++)
+      distances[compute_distance(input+i, input+j)]++;
   free(input);
   return 0;
 }
