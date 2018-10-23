@@ -76,14 +76,27 @@ int main(int argc, char *argv[])
   }
   free(buffer);
   fclose(fp);
-  //TODO Here the computing and openMP should come into play
+  //TODO Here openMP should come into play
   distances = calloc(NDISTANCES, sizeof(*distances));
   for (size_t i = 0; i < ncoordinates; i++)
     for (size_t j = i+1; j < ncoordinates; j++)
       distances[compute_distance(input+i, input+j)]++;
-  for (size_t i = 0; i < NDISTANCES; i++)
-    if (distances[i])
-      printf("%d: %d\n", i, distances[i]);
+  for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
+    for (size_t j = 0; j < 100; j++) { //count up rational part
+      int count = distances[100*i+j];
+      if (count) {
+	printf("%.2d.%.2d %d\n", i, j, count);
+      }
+    }
+  }
+
+  for (size_t j = 0; j < 65; j++) { //count up rational part
+    int count = distances[3400+j];
+    if (count){
+      printf("34.%.2d %d\n", j, count );
+    }    
+  }
+
   free(input);
   free(distances);
   return 0;
