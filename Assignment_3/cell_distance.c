@@ -8,28 +8,30 @@
 #include <string.h>
 
 #define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
-unsigned int *distances;
+unsigned int *distance_counters;
 
 typedef struct coordinates {
-  int x, y, z; //these are the coordinates * 1000
+  short int x, y, z; //these are the coordinates * 1000
 } coordinates_t;
 
 coordinates_t *input;
 
-int compute_distance(coordinates_t *a, coordinates_t *b)
+inline
+int compute_distance(coordinates_t * restrict a, coordinates_t * restrict b)
 {
-  int dx, dy, dz;
+  short int dx, dy, dz;
   dx = a->x - b->x;
   dy = a->y - b->y;
   dz = a->z - b->z;
-  int result = round(sqrt(dx*dx + dy*dy + dz*dz)/10);
+  int result = sqrtf(dx*dx + dy*dy + dz*dz) / 10;
   return result;
 }
 
-int read_coordinates(char *str)
+inline
+short int read_coordinates(char *str)
 {
   //str has format +03.123
-  int v =
+  short int v =
      10000 * str[1]
     + 1000 * str[2]
     +  100 * str[4]
@@ -77,13 +79,14 @@ int main(int argc, char *argv[])
   free(buffer);
   fclose(fp);
   //TODO Here openMP should come into play
-  distances = calloc(NDISTANCES, sizeof(*distances));
+  distance_counters = calloc(NDISTANCES, sizeof(*distance_counters));
   for (size_t i = 0; i < ncoordinates; i++)
     for (size_t j = i+1; j < ncoordinates; j++)
-      distances[compute_distance(input+i, input+j)]++;
+      distance_counters[compute_distance(input+i, input+j)]++;
+  
   for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
     for (size_t j = 0; j < 100; j++) { //count up rational part
-      int count = distances[100*i+j];
+      int count = distance_counters[100*i+j];
       if (count) {
 	printf("%.2d.%.2d %d\n", i, j, count);
       }
@@ -91,13 +94,13 @@ int main(int argc, char *argv[])
   }
 
   for (size_t j = 0; j < 65; j++) { //count up rational part
-    int count = distances[3400+j];
+    int count = distance_counters[3400+j];
     if (count){
       printf("34.%.2d %d\n", j, count );
     }    
   }
 
   free(input);
-  free(distances);
+  free(distance_counters);
   return 0;
 }
