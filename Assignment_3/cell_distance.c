@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
     {
       distance_counters_loc = calloc(NDISTANCES * nthreads, sizeof(*distance_counters_loc));
     }
-    #pragma omp for
+#pragma omp for schedule(dynamic, 1000)
     for (size_t i = 0; i < ncoordinates; i++)
       for (size_t j = i+1; j < ncoordinates; j++)
 	distance_counters_loc[NDISTANCES*ithread + compute_distance(input+i, input+j)]++;
