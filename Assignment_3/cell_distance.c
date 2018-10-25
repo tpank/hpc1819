@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
-unsigned int *distance_counters;
+unsigned short int *distance_counters;
 
 typedef struct coordinates {
   short int x, y, z; //these are the coordinates * 1000
@@ -17,13 +17,13 @@ typedef struct coordinates {
 coordinates_t *input;
 
 inline
-int compute_distance(coordinates_t * restrict a, coordinates_t * restrict b)
+unsigned short int compute_distance(coordinates_t * restrict a, coordinates_t * restrict b)
 {
   short int dx, dy, dz;
   dx = a->x - b->x;
   dy = a->y - b->y;
   dz = a->z - b->z;
-  int result = sqrtf(dx*dx + dy*dy + dz*dz) / 10;
+  unsigned short int result = sqrtf(dx*dx + dy*dy + dz*dz) / 10;
   return result;
 }
 
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   for (size_t i = 0; i < ncoordinates; i++) {
     if (NULL == fgets(buffer, 30, fp))
       exit(1);
-    int x, y, z;
+    short int x, y, z;
     x = read_coordinates(buffer);
     y = read_coordinates(buffer+8);
     z = read_coordinates(buffer+16);
@@ -79,14 +79,22 @@ int main(int argc, char *argv[])
   free(buffer);
   fclose(fp);
   //TODO Here openMP should come into play
-  distance_counters = calloc(NDISTANCES, sizeof(*distance_counters));
-  for (size_t i = 0; i < ncoordinates; i++)
-    for (size_t j = i+1; j < ncoordinates; j++)
-      distance_counters[compute_distance(input+i, input+j)]++;
   
+  omp_set_num_threads(nthreads);
+  
+  
+  distance_counters = calloc(NDISTANCES, sizeof(*distance_counters));
+  
+  //#pragma omp for schedule(dynamic, 100)
+    for (size_t i = 0; i < ncoordinates; i++)
+#pragma opm for
+      for (size_t j = i+1; j < ncoordinates; j++)
+	distance_counters[compute_distance(input+i, input+j)]++;
+
+    
   for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
     for (size_t j = 0; j < 100; j++) { //count up rational part
-      int count = distance_counters[100*i+j];
+      short int count = distance_counters[100*i+j];
       if (count) {
 	printf("%.2d.%.2d %d\n", i, j, count);
       }
@@ -94,7 +102,7 @@ int main(int argc, char *argv[])
   }
 
   for (size_t j = 0; j < 65; j++) { //count up rational part
-    int count = distance_counters[3400+j];
+    short int count = distance_counters[3400+j];
     if (count){
       printf("34.%.2d %d\n", j, count );
     }    
