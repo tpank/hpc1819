@@ -8,30 +8,30 @@
 #include <string.h>
 
 #define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
-unsigned short int *distance_counters;
+unsigned short *distance_counters;
 
 typedef struct coordinates {
-  short int x, y, z; //these are the coordinates * 1000
+  short x, y, z; //these are the coordinates * 1000
 } coordinates_t;
 
 coordinates_t *input;
 
 inline
-unsigned short int compute_distance(coordinates_t * restrict a, coordinates_t * restrict b)
+unsigned short compute_distance(coordinates_t * restrict a, coordinates_t * restrict b)
 {
-  short int dx, dy, dz;
+  short dx, dy, dz;
   dx = a->x - b->x;
   dy = a->y - b->y;
   dz = a->z - b->z;
-  unsigned short int result = sqrtf(dx*dx + dy*dy + dz*dz) / 10;
+  unsigned short result = sqrtf(dx*dx + dy*dy + dz*dz) / 10;
   return result;
 }
 
 inline
-short int read_coordinates(char *str)
+short read_coordinates(char *str)
 {
   //str has format +03.123
-  short int v =
+  short v =
      10000 * str[1]
     + 1000 * str[2]
     +  100 * str[4]
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     printf("Usage: %s -t<number of OpenMP threads>\n", argv[0]);
     exit(1);
   }
-  int nthreads = strtol(argv[1]+2, NULL, 0);
+  size_t nthreads = strtol(argv[1]+2, NULL, 0);
 
   FILE *fp = fopen("cells", "r");
   if (fp == NULL) {
@@ -66,7 +66,7 @@ int main(int argc, char *argv[])
   for (size_t i = 0; i < ncoordinates; i++) {
     if (NULL == fgets(buffer, 30, fp))
       exit(1);
-    short int x, y, z;
+    short x, y, z;
     x = read_coordinates(buffer);
     y = read_coordinates(buffer+8);
     z = read_coordinates(buffer+16);
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
     
   for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
     for (size_t j = 0; j < 100; j++) { //count up rational part
-      short int count = distance_counters[100*i+j];
+      unsigned short count = distance_counters[100*i+j];
       if (count) {
 	printf("%.2d.%.2d %d\n", i, j, count);
       }
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
   }
 
   for (size_t j = 0; j < 65; j++) { //count up rational part
-    short int count = distance_counters[3400+j];
+    unsigned short count = distance_counters[3400+j];
     if (count){
       printf("34.%.2d %d\n", j, count );
     }    
