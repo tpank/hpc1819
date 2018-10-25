@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define NDISTANCES 3465 //round(100*sqrt(20^2+20^2+20^2)+1
-unsigned short *distance_counters;
+unsigned *distance_counters;
 
 typedef struct coordinates {
   short x, y, z; //these are the coordinates * 1000
@@ -85,11 +85,11 @@ int main(int argc, char *argv[])
   
   distance_counters/*[NDISTANCES] = {0};/*/= calloc(NDISTANCES, sizeof(*distance_counters));
 
-  unsigned short *distance_counters_loc; 
+  unsigned *distance_counters_loc; 
 #pragma omp parallel
   {
     const int ithread = omp_get_thread_num();
-    #pragma omp single
+#pragma omp single
     {
       distance_counters_loc = calloc(NDISTANCES * nthreads, sizeof(*distance_counters_loc));
     }
@@ -98,12 +98,12 @@ int main(int argc, char *argv[])
       for (size_t j = i+1; j < ncoordinates; j++)
 	distance_counters_loc[NDISTANCES*ithread + compute_distance(input+i, input+j)]++;
 
-    #pragma omp for
+#pragma omp for
     for (size_t i = 0; i < NDISTANCES; i++)
       for (size_t j = 0; j < nthreads; j++)
 	distance_counters[i]+=distance_counters_loc[NDISTANCES*j + i];
 
-    #pragma omp single
+#pragma omp single
     {
       free(distance_counters_loc);
     }
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
     
   for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
     for (size_t j = 0; j < 100; j++) { //count up rational part
-      unsigned short count = distance_counters[100*i+j];
+      unsigned count = distance_counters[100*i+j];
       if (count) {
 	printf("%.2d.%.2d %d\n", i, j, count);
       }
@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
   }
 
   for (size_t j = 0; j < 65; j++) { //count up rational part
-    unsigned short count = distance_counters[3400+j];
+    unsigned count = distance_counters[3400+j];
     if (count){
       printf("34.%.2d %d\n", j, count );
     }    
