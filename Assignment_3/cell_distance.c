@@ -74,12 +74,12 @@ int main(int argc, char *argv[])
   fp = NULL;
   
   omp_set_num_threads(nthreads);
-  unsigned *distance_counters = calloc(nthreads * NDISTANCES, sizeof(*distance_counters));
+  unsigned long *distance_counters = calloc(nthreads * NDISTANCES, sizeof(*distance_counters));
 
 #pragma omp parallel
   {
     const int ithread = omp_get_thread_num();
-#pragma omp for schedule(dynamic, 1000)
+#pragma omp for schedule(dynamic, 100)
     for (size_t i = 0; i < ncoordinates; i++)
       for (size_t j = i+1; j < ncoordinates; j++)
 	distance_counters[NDISTANCES*ithread + compute_distance(input+i, input+j)]++;
@@ -95,16 +95,16 @@ int main(int argc, char *argv[])
 
   for (size_t i = 0; i < NDISTANCES/100; i++) { //count up integer part of output
     for (size_t j = 0; j < 100; j++) { //count up rational part
-      unsigned count = distance_counters[100*i+j];
+      unsigned long count = distance_counters[100*i+j];
       if (count)
-	printf("%.2d.%.2d %d\n", i, j, count);
+	printf("%.2d.%.2d %lu\n", i, j, count);
     }
   }
 
   for (size_t j = 0; j < 65; j++) { //count up rational part
-    unsigned count = distance_counters[3400+j];
+    unsigned long count = distance_counters[3400+j];
     if (count)
-      printf("34.%.2d %d\n", j, count);
+      printf("34.%.2d %lu\n", j, count);
   }
 
   free(distance_counters);
