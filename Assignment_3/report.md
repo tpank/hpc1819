@@ -7,12 +7,12 @@ For the coordinates, this is 5 digit decimal fixed point number, preceded with a
 
 *coordinates_t* is a *struct* containing a coordinate triplet, therefor having a size of 6 bytes. All read input coordiantes are stored in the arrays *input_a* and *input_b.
 
-To count the number of occurences for each of the 3465 possible rounded distances, we use an null-initialized array of 3465 *unsigned long*. As the program should support up to 2^32 cells, $$2^32*(2^32-1)/2 = 2^63-2^31$$ distances will be computed. Even if all these distances would be the same (which only happens if all cells are at the same location), an 8 byte integer is be big enough to store the count.
+To count the number of occurences for each of the 3465 possible rounded distances, we use an null-initialized array of 3465 *unsigned long*. As the program should support up to $$2^{32}$$ cells, $$2^{32}*(2^{32}-1)/2 = 2^{63}-2^{31}$$ distances will be computed. Even if all these distances would be the same (which only happens if all cells are at the same location), an 8 byte unsigned integer is big enough to store the count.
 
 ## Blocks of code
 *compute_distances* computes the distances between two coordinate triplets, returning it as a 4 decimal digit unsigned short integer. While the input coordinates are scaled by 1000, the output has to be scaled only by 100, therefor the result must be divided by 10. The use of the *sqrtf()* function for floats instead of *sqrt()* for longer doubles results in a significant speed up of the program. The float result is then implicitly truncated and returned as an integer.
 
-*read_coordinate* convertso a 7 character string of format \<sign\>ab.cde, with \<sign\> being + or - and a,b,c,d,e between 0 and 9 into a short integer. It uses the fact, that ASCII encoding of a digit is the same as the digit plus an offset.
+*read_coordinate* convertso a 7 character string of format \<sign\>ab.cde, with \<sign\> being + or - and a,b,c,d,e between 0 and 9 into a short integer. It uses the fact, that ASCII encoding of a digit is the same as the digit plus an offset. That offset is represented by the integer constant '0'. The characters are  multiplied by the decimal power of their significance and added up, then the offset is substracted for all digits at once.
 
 *read_coordinates* uses the *read_coordinate* function to convert a 24 characters array *str* into a coordinate triplet, storing it in *input*
 
