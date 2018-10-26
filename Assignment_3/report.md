@@ -3,11 +3,11 @@
 ## Data types
 
 The input as well as the output use a fixed point format to store the coordinates resp. distances.
-For the coordinates, this is 5 digit decimal fixed point number, preceded with a sign, for the output it is a four digit unsigned number. As floating point data types require relatively expensive operations, a big size (4 bytes for *float*, 8 for *double*), short integers are used instead. The coordinates are stored as *signed short*, the distances as *unsigned short*. These have only a size of two bytes each. input coordinates range from -10.000 to 10.000. They are stored in the program ignoring the decimal point, therefore they can be stored in *short*, which ranges from -32768 to 32767. Thes same goes for the output, ranging between 0 and 34.64 (the maximum distances between two points in our coordinates cube, $$\sqrt{3*(2*10)^2}$$.
+For the coordinates, this is a 5 digit decimal fixed point number, preceded with a sign, for the output it is a four digit unsigned number. As floating point data types require relatively expensive operations and a big size (4 bytes for *float*, 8 for *double*), short integers are used instead. The coordinates are stored as *signed short*, the distances as *unsigned short*. These have only a size of two bytes each. The input coordinates range from -10.000 to 10.000. They are stored in the program ignoring the decimal point, therefore they can be stored in *short*, which ranges from -32768 to 32767. Thes same goes for the output, ranging between 0 and 34.64 (the maximum distances between two points in our coordinates cube, $$\sqrt{3*(2*10)^2}$$.
 
 *coordinates_t* is a *struct* containing a coordinate triplet, therefor having a size of 6 bytes. All read input coordiantes are stored in the arrays *input_a* and *input_b.
 
-To count the number of occurences for each of the 3465 possible rounded distances, we use an null-initialized array of 3465 *unsigned long*. As the program should support up to $$2^{32}$$ cells, $$2^{32}*(2^{32}-1)/2 = 2^{63}-2^{31}$$ distances will be computed. Even if all these distances would be the same (which only happens if all cells are at the same location), an 8 byte unsigned integer is big enough to store the count.
+To count the number of occurences for each of the 3465 possible rounded distances, we use an null-initialized array of 3465 *unsigned long*. As the program should support up to $$2^{32}$$ cells, $$2^{32}*(2^{32}-1)/2 = 2^{63}-2^{31}$$ distances will be computed. Even if all these distances would be the same (which only happens if all cells are at the same location), an 8 byte unsigned integer is big enough to store the count, as it can store integers from $$0$$ to $$2^{64}-1$$
 
 ## Blocks of code
 *compute_distances* computes the distances between two coordinate triplets, returning it as a 4 decimal digit unsigned short integer. While the input coordinates are scaled by 1000, the output has to be scaled only by 100, therefor the result must be divided by 10. The use of the *sqrtf()* function for floats instead of *sqrt()* for longer doubles results in a significant speed up of the program. The float result is then implicitly truncated and returned as an integer.
@@ -32,6 +32,5 @@ For the parsing, first a big chunk of the file is loaded into memory. Then, in p
 When the distances between the cells are computed, OpenMP comes into play again. To avoid significant slowdown, atomic and critical statements are avoided. Each thread works on its individual section of the *distance_counters* array, so there are no data races. In the end, the thread arrays are summed up to achieve the final result. Even though OpenMP 4.5 seems to support an array reduction, this implementation turned out to be better in terms of performances.
 
 
-
-
-
+## Memory consumption
+The program allocates memory on several occasions: The distance_counters are an array of $$\text{number of threads} * 3465 * 8 \text{ byte}$$. The buffer for the file reading has the size of MAX_BLOCK_SIZE * 24 byte, and the two input blocks have a size of MAX_BLOCK_SIZE * 6 bytes each. These three add up to MAX_BLOCK_SIZE * 36 byte. The bigger MAX_BLOCK_SIZE is chosen, the faster the program runs. Especially the performance is much better if all cells can be read at once. For a sufficient small value of MAX_BLOCK_SIZE (in the implementation $$2^{20}$$) the program is therefor smaller than $$1024^3=2^{30} \text{ byte}$$, independet from the size of the input file. 
