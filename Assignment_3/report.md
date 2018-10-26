@@ -21,8 +21,8 @@ The actual computing is done in the next step. For each tuple of two points the 
 Finally, the program output is done. For this, integers have to be converted to fixed point rational numbers. For that, we split up the integers in the pre- and post-decimal point values, printing both of them with a fixed with using a format string.
 
 ## Parallization
-In the code parallelization is not used for parsing, but even if it had been used there synchronization would not be an issue because it only contains reading from a file and not writing to it.
-Parallelization is done at countind the distances between the cells and the explicit synchroniztion types like atomic, critical and reduction which slowe down the code is not used. In fact by allocating memory of size which is multiplication of number of threads and the size of global distance_counters array every thread is working only on its part of the distance_counter_local array and there is no issue with synchronization. Since the version of the gcc is 8.1.1 it was possible to use reduction on array but the way used in the code is much more efficient than using reduction for the global array in terms of performance.
+In the code parallelization is not used for parsing, but even if it had been used synchronization would not be an issue because it only contains reading from a file and not writing to it.
+Parallelization is done at computing the distance between the cells and the explicit synchroniztion types like atomic, critical and reduction which slowe down the code is not used. In fact by allocating memory of size which is multiplication of number of threads and the size of global distance_counters array every thread is working only on its part of the distance_counter_local array and there is no issue with synchronization. Since the version of the gcc is 8.1.1 it was  possible to use reduction on array but the way used in the code is much more efficient than using reduction for the global array in terms of performance.
 
 
 
