@@ -17,8 +17,13 @@ const char * const greyscale[] = {
 				  "180 180 180 ", "192 192 192 ", "204 204 204 ", "216 216 216 ", "228 228 228 ",
 				  "240 240 240 "
 };
-const char * const colors[] =
-  {"230 025 075 ", "060 180 075 ", "255 225 025 ", "000 130 200 ", "245 130 048 ", "145 030 180 ", "070 240 240 ", "240 050 230 ", "210 245 060 ", "250 190 190 ", "000 128 128 ", "230 190 255 ", "170 110 040 ", "255 250 200 ", "128 000 000 ", "170 255 195 ", "128 128 000 ", "255 215 180 ", "000 000 128 ", "128 128 128 ", "255 255 255 ", "000 000 000 "}; //RGB triplets of 20 different colors, encoded as strings
+const char * const colors[] = {
+			       "230 025 075 ", "060 180 075 ", "255 225 025 ", "000 130 200 ", "245 130 048 ",
+			       "145 030 180 ", "070 240 240 ", "240 050 230 ", "210 245 060 ", "250 190 190 ",
+			       "000 128 128 ", "230 190 255 ", "170 110 040 ", "255 250 200 ", "128 000 000 ",
+			       "170 255 195 ", "128 128 000 ", "255 215 180 ", "000 000 128 ", "128 128 128 ",
+			       "255 255 255 ", "000 000 000 "
+}; //RGB triplets of 20 different colors, encoded as strings
 
 unsigned int  nthreads, nrc, d;
 double complex *roots; //d+1 array
@@ -218,10 +223,10 @@ int main(int argc, char** argv) {
             iterations_loc = iterations[ix];
             for (int jx = 0; jx < nrc; ++jx)
 	        fwrite(colors[attractors_loc[jx]], 1, COLOR_LENGTH, fa); //sizeof(char) is 1 by definition
-            fwrite("\n", 1, 2, fa);
+            fwrite("\n", 1, 1, fa);
             for (int jx = 0; jx < nrc; ++jx)
                 fwrite(greyscale[iterations_loc[jx]], 1, COLOR_LENGTH, fc);
-            fwrite("\n", 1, 2, fc);    
+            fwrite("\n", 1, 1, fc);    
             free(attractors_loc); //allocated in thread_function
             free(iterations_loc);
         }
