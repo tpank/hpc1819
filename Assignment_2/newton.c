@@ -89,6 +89,7 @@ inline signed char check_solution(double complex solution)
 
 inline void compute_line(int line) {
     complex double point;
+    complex double imag_part =  I*(2 - 4.0*line/nrc);
     int iteration_count;
     signed char attractor;
     
@@ -97,7 +98,7 @@ inline void compute_line(int line) {
 
     for (int i = 0; i < nrc; i++)
     {
-        point = -2 + 4.0*line/nrc  + I * (2 - 4.0*i/nrc);
+        point =  (-2 + 4.0*i/nrc) + imag_part;
         iteration_count = 0;
         attractor = check_solution(point);
         while (-1 == attractor)
